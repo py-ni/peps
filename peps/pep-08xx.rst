@@ -192,7 +192,7 @@ necessary.
 Heap handles are handles conceptually stored in the Python heap; for example,
 in a custom native type or in module state, but not in C global state. PyNI
 will provide API functions to promote a local handle to a new heap handle, and
-to get a local handle for a given heap handle. All remaining PyNI APIs will
+to get a local handle from a given heap handle. All remaining PyNI APIs will
 accept only local handles.
 
 With the distinction between heap and local handles, the Python VM can apply
