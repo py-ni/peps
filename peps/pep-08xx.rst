@@ -418,7 +418,7 @@ New versions of module initialization
 -------
 
 The PyNI version of the module initialization sequence should build on top of
-:pep:`739`. Conceptually, the init function will return a versioned struct
+:pep:`793`. Conceptually, the init function will return a versioned struct
 with the module specification. The version of the struct implies the minimum
 required Python (and PyNI) version. The module init function cannot call any
 APIs because it does not receive the context argument. The "real"
