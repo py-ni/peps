@@ -6,7 +6,7 @@ Author: Stepan Sindelar <pablogsal@python.org>,
         Tim Felgentreff <dinoviehland@gmail.com>,
         Mark Shannon <brittanyrey@gmail.com>,
         Ken Jin <noahbkim@gmail.com>,
-        Pierre Augier
+        Pierre Augier <pierre.augier@cnrs.fr>
 Discussions-To: Pending
 Status: Draft
 Type: Standards Track
