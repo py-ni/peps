@@ -6,7 +6,7 @@ Author: Stepan Sindelar <pablogsal@python.org>,
         Tim Felgentreff <dinoviehland@gmail.com>,
         Mark Shannon <brittanyrey@gmail.com>,
         Ken Jin <noahbkim@gmail.com>,
-        Pierre Augier
+        Pierre Augier <pierre.augier@cnrs.fr>
 Discussions-To: Pending
 Status: Draft
 Type: Standards Track
@@ -192,7 +192,7 @@ necessary.
 Heap handles are handles conceptually stored in the Python heap; for example,
 in a custom native type or in module state, but not in C global state. PyNI
 will provide API functions to promote a local handle to a new heap handle, and
-to get a local handle for a given heap handle. All remaining PyNI APIs will
+to get a local handle from a given heap handle. All remaining PyNI APIs will
 accept only local handles.
 
 With the distinction between heap and local handles, the Python VM can apply
@@ -418,7 +418,7 @@ New versions of module initialization
 -------
 
 The PyNI version of the module initialization sequence should build on top of
-:pep:`739`. Conceptually, the init function will return a versioned struct
+:pep:`793`. Conceptually, the init function will return a versioned struct
 with the module specification. The version of the struct implies the minimum
 required Python (and PyNI) version. The module init function cannot call any
 APIs because it does not receive the context argument. The "real"
