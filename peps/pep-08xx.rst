@@ -1,11 +1,11 @@
 PEP: 810
 Title: A vision for Python's C API
-Author: Stepan Sindelar <pablogsal@python.org>,
-        Petr Viktorin <german.mb@gmail.com>,
-        Antonio Cuni <thomas@python.org>,
-        Tim Felgentreff <dinoviehland@gmail.com>,
-        Mark Shannon <brittanyrey@gmail.com>,
-        Ken Jin <noahbkim@gmail.com>,
+Author: Stepan Sindelar <stepan.sindelar@oracle.com>,
+        Petr Viktorin <encukou@gmail.com>,
+        Antonio Cuni <info@antocuni.eu>,
+        Tim Felgentreff <tim.felgentreff@oracle.com>,
+        Mark Shannon <mark@hotpy.org>,
+        Ken Jin <kenjin@python.org>,
         Pierre Augier <pierre.augier@cnrs.fr>
 Discussions-To: Pending
 Status: Draft
