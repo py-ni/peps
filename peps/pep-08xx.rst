@@ -321,6 +321,31 @@ extension and migrated parts, or new parts that use PyNI.
 This "migration" API has been prototyped in HPy and used to iteratively migrate
 parts of NumPy to HPy [7]_.
 
+Extensions that mix the legacy C API and PyNI can be built only for the
+version-specific ABI.
+
+A special category is extensions that publish their own APIs. For example,
+an extension may publish a ``PyObject*``-based API via a capsule.
+
+When such an extension is partially migrated to PyNI, it can provide a PyNI-
+based alternative API via another capsule. If the existing ``PyObject*``-
+based API needs to call code already converted to PyNI, it uses the
+conversion functions. Conversely, if a PyNI-based API needs to call code that
+has not yet been migrated, it can use the conversion functions to obtain
+``PyObject*`` references. In this case, both the API-consuming extension and
+the API-providing extension must be compiled for the same Python version,
+as before with the legacy ``PyObject*``-based API.
+
+When the API-providing extension has fully migrated to the PyNI API, it can be
+built for the universal ABI and still expose a ``PyObject*``-based API. At the
+boundary, the extension immediately converts the ``PyObject*`` pointers to
+PyNI handles, treating them as fully opaque. In such a scenario, only the
+legacy API-consuming extension must be compiled for the legacy ABI compatible
+with the Python VM running both extensions.
+
+If the API-consuming extension uses only the PyNI API capsule, it can be compiled
+for either the Python version-specific PyNI ABI or the universal PyNI ABI.
+
 Debug Mode
 -------
 
