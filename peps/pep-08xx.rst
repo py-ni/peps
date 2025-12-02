@@ -443,6 +443,59 @@ The intended usage is: first check whether the conversion is possible and, if
 so, use the more efficient APIs; otherwise, fall back to more generic APIs,
 such as ``PyNI_Sequence_GetItem``, which may look up and call ``__getitem__``.
 
+General API Guidelines
+-------
+
+Principles
+
+Priorities: safety > speed > ergonomics.
+
+Safety means APIs must not corrupt VM state or crash the interpreter when used
+as documented. Incorrect usage will be detected in debug mode. Unless explicitly
+documented otherwise, APIs are thread-safe to call concurrently on the same
+arguments, and safe to call with any Python object.
+
+Handles and ownership:
+
+* No borrowed returns: PyNI APIs never return borrowed handles.
+* No implicit transfers: passing a handle to an API does not transfer ownership.
+
+Deterministic and scoped lifetimes:
+
+Functions returning potentially borrowed pointers into VM-managed memory
+(e.g., a unicode object buffer) must clearly tie lifetime to a specific
+handle or provide API to return ("close") the memory back to the VM.
+The lifetime of such pointers must always be restricted at most to the current
+Python VM to native transition, i.e., the same way as local handles.
+Each such API must explicitly specify if the returned pointer is readonly
+or writeable.
+
+Where possible, the debug mode will hand out copies that will be destroyed
+when they go out of scope. While in the non-debug mode, the Python VM may
+return a pointer to borrowed memory, user must not rely on that. Likewise,
+the debug mode will return copies allocated in read-only pages for pointers
+that are documented to be readonly. In onn debug mode, the Python VM may
+return a pointer to writeable memory.
+
+ABI design constraints:
+
+* Fixed-width integer types at the ABI boundary (e.g., uint32_t, int64_t).
+   * The C convenience layer may offer overloads for int, long, size_t, etc.
+* Avoid C features that hinder interop or portability at the ABI boundary:
+   * unions, bitfields, flexible array members, C enums with unspecified size, variadic functions.
+
+
+TODO: Variadic Argument Functions
+-------
+
+TODO: do we want this?
+
+Helper such as PyStr_Format are very useful, but problematic for non-C languages interop.
+PyNI ABI will provide an entry point that takes the variadic arguments as an array of
+`void*` pointers. The PyNI C API will provide simple inline C wrapper function that takes
+C variadic arguments as usual and calls the ABI. Rust, for example, will provide its own
+wrapper calling the same ABI.
+
 
 Process
 ==========
