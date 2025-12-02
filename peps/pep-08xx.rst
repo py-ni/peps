@@ -481,6 +481,22 @@ As a validation, we can adapt the VM to take advantage of a new-style type with
 a PyNI ``nb_add`` slot that takes, for example, a tagged integer as the
 right-hand side and handles it efficiently.
 
+Backward Compatibility with pre-PyNI Pythons
+-------
+
+If PyNI becomes supported in Python 3.x, there will be a period during which
+older, pre-PyNI Python versions remain supported, and the inability to provide
+extensions for those versions could deter extension developers from migrating
+to PyNI.
+
+The plan is to provide a version-specific PyNI ABI for older, still-supported
+Python versions. These ABIs will be based on the PyNI infrastructure for
+generating ABIs but will live outside the CPython project and will not be
+backported to the respective Python versions. The universal PyNI ABI will not
+be supported on older Pythons. Consequently, a PyNI-based extension will need
+to provide individual builds for older Python versions for the time being,
+until all supported Python versions also support PyNI.
+
 
 Acknowledgements
 ================
