@@ -173,21 +173,48 @@ altogether at the ABI level.
 Ownership Model
 -------
 
-To abstract reference counting and provide better diagnostics for reference
-leaks, PyNI will use a different ownership model. We call references to Python
-objects *handles*. A *handle* is opened and closed by a single owner. A
-*handle* can be duplicated to create a new ownership scope, and the duplicate
-must be explicitly closed.
+PyNI abstracts CPython’s reference counting behind explicit, opaque handles
+with well-defined ownership and lifetime rules. This design improves
+portability across Python implementations, allows CPython to use different
+object representations, such as tagged pointers, and enables precise
+diagnostics in debug mode.
+
+Handles vs PyObject*
+
+In the legacy C API, a PyObject* pointer denotes the object identity directly:
+the same object is always the same address, and any reference to it can be
+INCREFed/DECREFed interchangeably as long as total INCREFs match total DECREFs.
+In contrast, PyNI decouples "handle identity" from "object identity". Multiple
+distinct handles can refer to the same underlying Python object, and each
+handle has its own lifetime obligations.
+
+* Every handle has exactly one owner and must be closed exactly once by that
+  owner.
+* Duplicating a handle creates a new, independently owned handle that must
+  also be closed exactly once.
+* Using a closed handle is an error.
+* Closing the same handle twice is an error.
+* Forgetting to close a handle causes a leak.
+
+In debug mode, PyNI will perform runtime checks to detect leaks, double-closes,
+and use-after-close, and will report the precise creation and close sites.
+
+Since two distinct handles can refer to the same underlying object, an API call
+(``PyNI_Is``) will be necessary to test object identity. On the C level a PyNI
+handle value (`uintptr_t`) will be wrapped in a struct to forbid direct
+comparison (e.g., ``local1 == local2``).
 
 There will be two types of *handles*: local and heap [#Naming]_.
 
-A local handle can be received 1) as an argument to an extension function, in
-which case the owner is the Python VM, or 2) as a result of an API call (e.g.,
-``PyNI_LongFromLong``), in which case the owner is the caller of that API. A
-local handle is only valid for the duration of the call from the Python VM to
-the native extension in which it was created. This lets the Python VM
-efficiently allocate and free any metadata associated with local handles if
-necessary.
+Local handles are valid only for the duration of a single call from the Python
+VM into native code. This lets the Python VM efficiently allocate and free any
+metadata associated with local handles if necessary. They are never shared
+across threads and must not be stored in long-lived data structures. A local
+handle can be obtained as:
+
+* Argument to an extension function, in which case the owner is the Python VM.
+* Result of an API call (e.g., ``PyNI_LongFromLong``), in which case the owner
+  is the caller of that API.
 
 Heap handles are handles conceptually stored in the Python heap; for example,
 in a custom native type or in module state, but not in C global state. PyNI
