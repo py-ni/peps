@@ -1,6 +1,25 @@
 Python Enhancement Proposals
 ============================
 
+PyNI PEP status
+==============
+
+PyNI is an ongoing effort to design a modern C API and universal ABI for
+Python extensions. The work is currently in the proposal and prototyping
+stage, centered around `PEP 810 <./peps/pep-08xx.rst>`_, which is still a
+draft.
+
+PyNI builds on ideas explored by `HPy <https://github.com/hpyproject/hpy>`_,
+an existing project that demonstrated a portable, implementation-agnostic API.
+HPy is an inspiration and prototype for PyNI, but PyNI is a separate design
+effort rather than simply a renamed continuation of HPy.
+
+Progress depends on community time and support. Contributions and feedback
+are welcome from people interested in moving this work forward; experience
+with CPython development and C extensions is helpful.
+
+**Original README follows:**
+
 .. image:: https://github.com/python/peps/actions/workflows/render.yml/badge.svg
     :target: https://github.com/python/peps/actions
 
