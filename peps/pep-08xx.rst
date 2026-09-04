@@ -168,7 +168,10 @@ automated memory management strategies can also map efficiently to this model.
 Another example is the *context* argument described below. It is required for
 the universal ABI (explained later). A version-specific ABI may use the first
 mandatory opaque argument for any useful purpose, including omitting it
-altogether at the ABI level.
+altogether at the ABI level. Because version-specific API functions are
+implemented as ``static inline`` wrappers (explained later), omitting an unused
+context argument has no runtime cost: the compiler can eliminate the unused
+argument and any associated call overhead during compilation.
 
 Ownership Model
 -------
@@ -296,9 +299,11 @@ For the universal ABI, the API implementation must not assume what
 ``PyNI_IterCheck`` stored as a function pointer in the context argument. The
 layout of the C struct behind the (from the API perspective) opaque
 ``PyNI_Context`` argument defines the ABI, but still leaves room for the Python
-VM to prepend any data it needs before the ``Universal_Context_t`` struct. The
-pointers in ``Universal_Context_t`` will be provided by the Python VM at
-runtime. One can think of ``Universal_Context_t`` as a virtual method table.
+VM to allocate a larger block of memory, prepend any data it needs before the
+``Universal_Context_t`` struct, and access that data from the
+``Universal_Context_t`` pointer using negative offsets. The Python VM will
+provide the pointers in ``Universal_Context_t`` at runtime. One can think of
+``Universal_Context_t`` as a virtual method table.
 
 .. code-block:: c
 
@@ -383,8 +388,10 @@ for any extension built for the universal mode.
 In addition to the ownership model, debug mode should check API contracts, for
 example:
 
-    * the context argument is not reused across extension calls buffers
-    * returned by the API are not used after being released
+    * the context argument is not reused across extension calls
+    * buffers returned by the API are not used after being released
+    * local handles are not used after the extension call that defines their
+      lifetime
 
 A prototype of this feature was developed as part of the HPy project [6]_.
 
@@ -467,15 +474,15 @@ Functions returning potentially borrowed pointers into VM-managed memory
 handle or provide API to return ("close") the memory back to the VM.
 The lifetime of such pointers must always be restricted at most to the current
 Python VM to native transition, i.e., the same way as local handles.
-Each such API must explicitly specify if the returned pointer is readonly
-or writeable.
+Each such API must explicitly specify if the returned pointer is read-only
+or writable.
 
-Where possible, the debug mode will hand out copies that will be destroyed
-when they go out of scope. While in the non-debug mode, the Python VM may
-return a pointer to borrowed memory, user must not rely on that. Likewise,
-the debug mode will return copies allocated in read-only pages for pointers
-that are documented to be readonly. In onn debug mode, the Python VM may
-return a pointer to writeable memory.
+Where possible, debug mode will hand out copies that will be destroyed when
+they go out of scope. In non-debug mode, the Python VM may return a pointer to
+borrowed memory, but users must not rely on that. Likewise, debug mode will
+return copies allocated in read-only pages for pointers that are documented to
+be read-only. In non-debug mode, the Python VM may return a pointer to writable
+memory.
 
 ABI design constraints:
 
@@ -485,16 +492,17 @@ ABI design constraints:
    * unions, bitfields, flexible array members, C enums with unspecified size, variadic functions.
 
 
-TODO: Variadic Argument Functions
+Open Question: Variadic Argument Functions
 -------
 
-TODO: do we want this?
+Helpers such as ``PyNI_Str_Format`` are very useful, but problematic for
+interoperability with non-C languages.
 
-Helper such as PyStr_Format are very useful, but problematic for non-C languages interop.
-PyNI ABI will provide an entry point that takes the variadic arguments as an array of
-`void*` pointers. The PyNI C API will provide simple inline C wrapper function that takes
-C variadic arguments as usual and calls the ABI. Rust, for example, will provide its own
-wrapper calling the same ABI.
+One possibility is for the PyNI ABI to provide an entry point that takes the
+variadic arguments as an array of ``void *`` pointers. The PyNI C API would
+provide a simple inline C wrapper function that takes C variadic arguments as
+usual and calls the ABI. Rust, for example, would provide its own wrapper
+calling the same ABI.
 
 
 Process
